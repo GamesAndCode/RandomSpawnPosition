@@ -24,10 +24,11 @@ public class Spawner : MonoBehaviour
         //yield return StartCoroutine(ArroundTargetWithSpace(gameObject, 5, 2));
         //yield return StartCoroutine(SpawnOutOfScreen());
         screenPositionManager.spawnOnAxis = true;
+        screenPositionManager.spawnOnCircle = true;
         //yield return StartCoroutine(SpawnOutOfScreen());
-        //yield return StartCoroutine(SpawnOutOfScreen(SpawnDirection.LEFT, SpawnDirection.RIGHT, SpawnDirection.BOTTOM));
+        yield return StartCoroutine(SpawnOutOfScreen(SpawnDirection.LEFT, SpawnDirection.BOTTOM, SpawnDirection.RIGHT, SpawnDirection.TOP));
         //yield return StartCoroutine(ArroundTargetWithRadius(gameObject, 5));
-        yield return StartCoroutine(CircleScreen());
+        //yield return StartCoroutine(CircleScreen());
 
     }
 
@@ -86,17 +87,6 @@ public class Spawner : MonoBehaviour
         for (int i = 0; i < spawnCount; i++)
         {
             Instantiate(onPoint, screenPositionManager.GetRandomPositionOnCircleArroundTarget(gameObject, radius), Quaternion.identity);
-            yield return new WaitForSeconds(timeBetweenSpawns);
-        }
-    }
-
-    private IEnumerator CircleScreen()
-    {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
-        GameObject gameObject = new GameObject();
-        for (int i = 0; i < spawnCount; i++)
-        {
-            Instantiate(onPoint, screenPositionManager.GetPostionOnCircleOutOfScreen(gameObject), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
