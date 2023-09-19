@@ -259,6 +259,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 084c831d5b076294a970d2949ecc8844, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  onPoint: {fileID: 3163329566103661074, guid: 9014eb56320055a4ea6bc4beb832bdf2, type: 3}
-  onAxis: {fileID: 8559904233119637335, guid: 7e5d806b93dd13d43a578efb6a5ffc46, type: 3}
-  onScreen: {fileID: 7994457193851604195, guid: 06aabd7c94e6e654ab2eb56446544178, type: 3}
+  objectToSpawn: {fileID: 3163329566103661074, guid: 9014eb56320055a4ea6bc4beb832bdf2, type: 3}
+  spawnOnAxis: 1
+  spawnOnCircle: 1
+  spawnCircular: 1
+  onScreen: 0
+  outOfScreen: 1
+  outOfScreenLeftRight: 0
+  arroundTarget: 0
+  arroundTargetOnRadius: 0
+  arroundTargetInDonut: 0

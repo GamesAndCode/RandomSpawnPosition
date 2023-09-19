@@ -4,10 +4,20 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private GameObject onPoint;
-    [SerializeField] private GameObject onAxis;
-    [SerializeField] private GameObject onScreen;
+    [SerializeField] private GameObject objectToSpawn;
 
+    [SerializeField] private bool spawnOnAxis;
+    [SerializeField] private bool spawnOnCircle;
+    [SerializeField] private bool spawnCircular;
+
+    [SerializeField] private bool onScreen = false;
+    [SerializeField] private bool outOfScreen = false;
+    [SerializeField] private bool outOfScreenLeftRight = false;
+
+    [SerializeField] private bool arroundTarget = false;
+    [SerializeField] private bool arroundTargetOnRadius = false;
+    [SerializeField] private bool arroundTargetInDonut = false;
+    
     private ScreenPositionManager screenPositionManager;
     private int spawnCount = 1000;
     private float timeBetweenSpawns = 0.005f;
@@ -19,74 +29,77 @@ public class Spawner : MonoBehaviour
 
     private IEnumerator Start()
     {
-        GameObject gameObject = new GameObject();
+        GameObject gameObject = new GameObject("Target");
         gameObject.transform.position = new Vector2(0, 0);
-        //yield return StartCoroutine(ArroundTargetWithSpace(gameObject, 5, 2));
-        //yield return StartCoroutine(SpawnOutOfScreen());
-        screenPositionManager.spawnOnAxis = true;
-        screenPositionManager.spawnOnCircle = true;
-        //yield return StartCoroutine(SpawnOutOfScreen());
-        yield return StartCoroutine(SpawnOutOfScreen(SpawnDirection.LEFT, SpawnDirection.BOTTOM, SpawnDirection.RIGHT, SpawnDirection.TOP));
-        //yield return StartCoroutine(ArroundTargetWithRadius(gameObject, 5));
-        //yield return StartCoroutine(CircleScreen());
+        screenPositionManager.spawnOnAxis = spawnOnAxis;
+        screenPositionManager.spawnOnCircle = spawnOnCircle;
+        screenPositionManager.spawnCircular = spawnCircular;
 
+        if(onScreen) yield return StartCoroutine(SpawnOnScreen());
+        if(outOfScreen) yield return StartCoroutine(SpawnOutOfScreen());
+        if(outOfScreenLeftRight) yield return StartCoroutine(SpawnOutOfScreen(SpawnDirection.LEFT, SpawnDirection.RIGHT));
+        
+        if(arroundTarget) yield return StartCoroutine(ArroundCircle(gameObject, 5));
+        if(arroundTargetOnRadius) yield return StartCoroutine(ArroundTargetWithRadius(gameObject, 5));
+        if(arroundTargetInDonut) yield return StartCoroutine(ArroundTargetWithSpace(gameObject, 5, 2));
     }
 
     private IEnumerator SpawnOutOfScreen()
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.GetRandomPositionOutOfScreen(), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOutOfScreen(), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
 
     private IEnumerator SpawnOutOfScreen(params SpawnDirection[] spawnDirections)
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.GetPositionOutOfScreen(spawnDirections), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetPositionOutOfScreen(spawnDirections), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
 
     private IEnumerator SpawnOnScreen()
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.GetRandomPositionOnScreen(), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOnScreen(), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
 
     private IEnumerator ArroundCircle(GameObject gameObject, float radius)
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.GetRandomPositionArroundTarget(gameObject, radius), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionArroundTarget(gameObject, radius), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
+
     private IEnumerator ArroundTargetWithSpace(GameObject gameObject, float radius, float space)
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.ArroundTargetWithSpace(gameObject, radius, space), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionInsideDonutArroundTarget(gameObject, radius, space), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
 
     private IEnumerator ArroundTargetWithRadius(GameObject gameObject, float radius)
     {
-        onPoint.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
+        objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(onPoint, screenPositionManager.GetRandomPositionOnCircleArroundTarget(gameObject, radius), Quaternion.identity);
+            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOnCircleArroundTarget(gameObject, radius), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }

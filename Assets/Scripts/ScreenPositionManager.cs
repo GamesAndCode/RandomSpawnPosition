@@ -1,13 +1,22 @@
 using System;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 using Random = UnityEngine.Random;
 
 public class ScreenPositionManager
 {
     public float percentageOutOffScreen { get; set; } = 0.1f;
+
+    /// <summary>
+    /// Defines if the position is on the axis or on a point from the given direction 
+    /// </summary>
     public bool spawnOnAxis { get; set; } = false;
+
+    /// <summary>
+    /// Defines if the position is on the circle or on a point from the given direction 
+    /// </summary>
     public bool spawnOnCircle { get; set; } = false;
+
+    public bool spawnCircular { get; set; } = false;
 
     private ScreenBorder screenBorder;
 
@@ -22,33 +31,50 @@ public class ScreenPositionManager
         return new Vector2(Random.Range(screenBorder.bottomLeft.x, screenBorder.bottomRight.x), Random.Range(screenBorder.bottomLeft.y, screenBorder.topLeft.y));
     }
 
+    /// <summary>
+    /// Get a random position inside a circle arround the target.
+    /// </summary>
     public Vector2 GetRandomPositionArroundTarget(GameObject target, float radius)
     {
         return (Random.insideUnitCircle * radius) + (Vector2)target.transform.position;
     }
 
+    /// <summary>
+    /// Get a random position arround a target with a given radius.
+    /// </summary>
     public Vector2 GetRandomPositionOnCircleArroundTarget(GameObject target, float radius)
     {
         return Random.insideUnitCircle.normalized * radius + (Vector2)target.transform.position;
     }
 
-    public Vector2 ArroundTargetWithSpace(GameObject target, float radius, float space)
+    /// <summary>
+    /// Get 
+    /// </summary>
+    public Vector2 GetRandomPositionInsideDonutArroundTarget(GameObject target, float outerRadius, float innerRadius)
     {
-        Vector2 position = GetRandomPositionArroundTarget(target, radius - space);
+        Vector2 position = GetRandomPositionArroundTarget(target, outerRadius - innerRadius);
         Vector2 direction = (position - (Vector2)target.transform.position).normalized;
-        return position + direction * space;
+        return position + direction * innerRadius;
     }
 
+    /// <summary>
+    /// Get a random position out of screen. Distance is defined by percentageOutOffScreen.
+    /// </summary>
     public Vector2 GetRandomPositionOutOfScreen()
     {
         SpawnDirection[] directions = (SpawnDirection[])Enum.GetValues(typeof(SpawnDirection));
         SpawnDirection randomDirection = directions[Random.Range(0, directions.Length)];
-        return GetPositionOutOfScreen(randomDirection);
+        return spawnCircular ? GetPostionOnCircleOutOfScreen(randomDirection) : GetPostionOnCircleOutOfScreen(randomDirection);
     }
 
+    /// <summary>
+    /// Get a random position out of screen defined the input directions.
+    /// </summary>
+    /// <param name="spawnDirections">TOP, BOTTOM, LEFT, RIGHT,</param>
     public Vector2 GetPositionOutOfScreen(params SpawnDirection[] spawnDirections)
     {
-        return GetPositionOutOfScreen(spawnDirections[Random.Range(0, spawnDirections.Length)]);
+        SpawnDirection randomSpawnDirection = spawnDirections[Random.Range(0, spawnDirections.Length)];
+        return spawnCircular ? GetPostionOnCircleOutOfScreen(randomSpawnDirection) : GetPositionOutOfScreen(randomSpawnDirection);
     }
 
     private Vector2 GetPositionOutOfScreen(SpawnDirection direction)
