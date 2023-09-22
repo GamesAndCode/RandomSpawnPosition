@@ -2,91 +2,89 @@ using System;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class ScreenPositionManager
+public class RandomPosition
 {
-    public float percentageOutOffScreen { get; set; } = 0.1f;
+    // Affects how far the position is out of screen.
+    // Percentage calculated with screen width and height.
+    public float PercentageOffscreen { get; set; } = 0.1f;
 
-    /// <summary>
-    /// Defines if the position is on the axis or on a point from the given direction 
-    /// </summary>
-    public bool spawnOnAxis { get; set; } = false;
+    // Out of screen position using screen or circular shape.
+    public bool Circular { get; set; } = false;
 
-    /// <summary>
-    /// Defines if the position is on the circle or on a point from the given direction 
-    /// </summary>
-    public bool spawnOnCircle { get; set; } = false;
+    // Out of screen position on axis or on a point in the given direction 
+    public bool SinglePoint { get; set; } = false;
 
-    public bool spawnCircular { get; set; } = false;
 
-    private ScreenBorder screenBorder;
+    private ScreenBorders screenBorder;
 
-    public ScreenPositionManager()
+    public RandomPosition()
     {
-        screenBorder = new ScreenBorder();
+        screenBorder = new ScreenBorders();
     }
 
-    public Vector2 GetRandomPositionOnScreen()
+    /// <summary>
+    /// Get a random position around the target inside a circle .
+    /// </summary>
+    public Vector2 AroundTargetInCircle(GameObject target, float radius)
+    {
+        return (Random.insideUnitCircle * radius) + (Vector2)target.transform.position;
+    }
+
+    /// <summary>
+    /// Get a random position around a target on a given radius.
+    /// </summary>
+    public Vector2 AroundTargetOnCircle(GameObject target, float radius)
+    {
+        return Random.insideUnitCircle.normalized * radius + (Vector2)target.transform.position;
+    }
+
+    /// <summary>
+    /// Get a random position around the target within a given area defined by the inner and outer radius.
+    /// </summary>
+    public Vector2 AroundTargetInDonut(GameObject target, float innerRadius, float outerRadius)
+    {
+        Vector2 position = AroundTargetInCircle(target, outerRadius - innerRadius);
+        Vector2 direction = (position - (Vector2)target.transform.position).normalized;
+        return position + direction * innerRadius;
+    }
+
+    public Vector2 OnScreen()
     {
         screenBorder.CalculateScreenBorders();
         return new Vector2(Random.Range(screenBorder.bottomLeft.x, screenBorder.bottomRight.x), Random.Range(screenBorder.bottomLeft.y, screenBorder.topLeft.y));
     }
 
     /// <summary>
-    /// Get a random position inside a circle arround the target.
-    /// </summary>
-    public Vector2 GetRandomPositionArroundTarget(GameObject target, float radius)
-    {
-        return (Random.insideUnitCircle * radius) + (Vector2)target.transform.position;
-    }
-
-    /// <summary>
-    /// Get a random position arround a target with a given radius.
-    /// </summary>
-    public Vector2 GetRandomPositionOnCircleArroundTarget(GameObject target, float radius)
-    {
-        return Random.insideUnitCircle.normalized * radius + (Vector2)target.transform.position;
-    }
-
-    /// <summary>
-    /// Get 
-    /// </summary>
-    public Vector2 GetRandomPositionInsideDonutArroundTarget(GameObject target, float outerRadius, float innerRadius)
-    {
-        Vector2 position = GetRandomPositionArroundTarget(target, outerRadius - innerRadius);
-        Vector2 direction = (position - (Vector2)target.transform.position).normalized;
-        return position + direction * innerRadius;
-    }
-
-    /// <summary>
     /// Get a random position out of screen. Distance is defined by percentageOutOffScreen.
     /// </summary>
-    public Vector2 GetRandomPositionOutOfScreen()
+    public Vector2 OutOfScreen()
     {
-        SpawnDirection[] directions = (SpawnDirection[])Enum.GetValues(typeof(SpawnDirection));
-        SpawnDirection randomDirection = directions[Random.Range(0, directions.Length)];
-        return spawnCircular ? GetPostionOnCircleOutOfScreen(randomDirection) : GetPostionOnCircleOutOfScreen(randomDirection);
+        ScreenDirection[] directions = (ScreenDirection[])Enum.GetValues(typeof(ScreenDirection));
+        ScreenDirection randomDirection = directions[Random.Range(0, directions.Length)];
+        return Circular ? OutOfScreenDirectionCircular(randomDirection) : OutOfScreenDirection(randomDirection);
     }
 
     /// <summary>
-    /// Get a random position out of screen defined the input directions.
+    /// Get a random position out of screen defined by the input directions.
+    /// When using singlePoint == false, only TOP, BOTTOM, LEFT, RIGHT are needed.
     /// </summary>
-    /// <param name="spawnDirections">TOP, BOTTOM, LEFT, RIGHT,</param>
-    public Vector2 GetPositionOutOfScreen(params SpawnDirection[] spawnDirections)
+    /// <param name="screenDirections">Values of ScreenDirection enum</param>
+    public Vector2 OutOfScreenDirection(params ScreenDirection[] screenDirections)
     {
-        SpawnDirection randomSpawnDirection = spawnDirections[Random.Range(0, spawnDirections.Length)];
-        return spawnCircular ? GetPostionOnCircleOutOfScreen(randomSpawnDirection) : GetPositionOutOfScreen(randomSpawnDirection);
+        ScreenDirection randomSpawnDirection = screenDirections[Random.Range(0, screenDirections.Length)];
+        return Circular ? OutOfScreenDirectionCircular(randomSpawnDirection) : OutOfScreenDirection(randomSpawnDirection);
     }
 
-    private Vector2 GetPositionOutOfScreen(SpawnDirection direction)
+    private Vector2 OutOfScreenDirection(ScreenDirection direction)
     {
         screenBorder.CalculateScreenBorders();
         float x = screenBorder.bottomLeft.x + screenBorder.width * 0.5f;
         float y = screenBorder.bottomLeft.y + screenBorder.height * 0.5f;
 
-        float additionalWidth = screenBorder.width * percentageOutOffScreen;
-        float additionalHeight = screenBorder.height * percentageOutOffScreen;
+        float additionalWidth = screenBorder.width * PercentageOffscreen;
+        float additionalHeight = screenBorder.height * PercentageOffscreen;
 
-        if (spawnOnAxis)
+        if (!SinglePoint)
         {
             x = Random.Range(screenBorder.bottomLeft.x - additionalWidth, screenBorder.bottomRight.x + additionalWidth);
             y = Random.Range(screenBorder.bottomLeft.y - additionalHeight, screenBorder.topLeft.y + additionalHeight);
@@ -94,31 +92,31 @@ public class ScreenPositionManager
 
         switch (direction)
         {
-            case SpawnDirection.TOP:
+            case ScreenDirection.TOP:
                 y = screenBorder.topLeft.y + additionalHeight;
                 break;
-            case SpawnDirection.BOTTOM:
+            case ScreenDirection.BOTTOM:
                 y = screenBorder.bottomLeft.y - additionalHeight;
                 break;
-            case SpawnDirection.LEFT:
+            case ScreenDirection.LEFT:
                 x = screenBorder.bottomLeft.x - additionalWidth;
                 break;
-            case SpawnDirection.RIGHT:
+            case ScreenDirection.RIGHT:
                 x = screenBorder.bottomRight.x + additionalWidth;
                 break;
-            case SpawnDirection.TOP_LEFT:
+            case ScreenDirection.TOP_LEFT:
                 x = screenBorder.bottomLeft.x - additionalWidth;
                 y = screenBorder.topLeft.y + additionalHeight;
                 break;
-            case SpawnDirection.TOP_RIGHT:
+            case ScreenDirection.TOP_RIGHT:
                 x = screenBorder.bottomRight.x + additionalWidth;
                 y = screenBorder.topRight.y + additionalHeight;
                 break;
-            case SpawnDirection.BOTTOM_LEFT:
+            case ScreenDirection.BOTTOM_LEFT:
                 x = screenBorder.bottomLeft.x - additionalWidth;
                 y = screenBorder.bottomLeft.y - additionalHeight;
                 break;
-            case SpawnDirection.BOTTOM_RIGHT:
+            case ScreenDirection.BOTTOM_RIGHT:
                 x = screenBorder.bottomRight.x + additionalWidth;
                 y = screenBorder.bottomRight.y - additionalHeight;
                 break;
@@ -126,7 +124,7 @@ public class ScreenPositionManager
         return new Vector2(x, y);
     }
 
-    private Vector2 GetPostionOnCircleOutOfScreen(SpawnDirection direction)
+    private Vector2 OutOfScreenDirectionCircular(ScreenDirection direction)
     {
         screenBorder.CalculateScreenBorders();
         float x = screenBorder.bottomLeft.x + screenBorder.width * 0.5f;
@@ -134,53 +132,52 @@ public class ScreenPositionManager
 
         Vector2 middle = (screenBorder.bottomLeft + screenBorder.topRight) / 2;
         float radius = Vector2.Distance(middle, screenBorder.topLeft);
-        radius += radius * percentageOutOffScreen;
+        radius += radius * PercentageOffscreen;
 
         float directionAngle = Vector2.SignedAngle(Vector2.right, new Vector2(1, 1) - middle);
         float angle = 90;
 
         switch (direction)
         {
-            case SpawnDirection.TOP:
+            case ScreenDirection.TOP:
                 angle = Random.Range(-directionAngle + 90, directionAngle + 90);
                 y = (middle + (Vector2.up - middle).normalized * radius).y;
                 break;
-            case SpawnDirection.BOTTOM:
+            case ScreenDirection.BOTTOM:
                 angle = Random.Range(-directionAngle - 90, directionAngle - 90);
                 y = (middle + Vector2.down * radius).y;
                 break;
-            case SpawnDirection.LEFT:
+            case ScreenDirection.LEFT:
                 angle = Random.Range(-directionAngle - 180, directionAngle - 180);
                 x = (middle + Vector2.left * radius).x;
                 break;
-            case SpawnDirection.RIGHT:
+            case ScreenDirection.RIGHT:
                 angle = Random.Range(-directionAngle, directionAngle);
                 x = (middle + Vector2.right * radius).x;
                 break;
-            case SpawnDirection.TOP_LEFT:
+            case ScreenDirection.TOP_LEFT:
                 Vector2 topLeft = middle + (new Vector2(-1, 1) - middle).normalized * radius;
                 x = topLeft.x;
                 y = topLeft.y;
                 break;
-            case SpawnDirection.TOP_RIGHT:
-                Debug.Log(((Vector2)screenBorder.topRight - middle).normalized);
+            case ScreenDirection.TOP_RIGHT:
                 Vector2 topRight = middle + (new Vector2(1, 1) - middle).normalized * radius;
                 x = topRight.x;
                 y = topRight.y;
                 break;
-            case SpawnDirection.BOTTOM_LEFT:
+            case ScreenDirection.BOTTOM_LEFT:
                 Vector2 bottomLeft = middle + (new Vector2(-1, -1) - middle).normalized * radius;
                 x = bottomLeft.x;
                 y = bottomLeft.y;
                 break;
-            case SpawnDirection.BOTTOM_RIGHT:
+            case ScreenDirection.BOTTOM_RIGHT:
                 Vector2 bottomRight = middle + (new Vector2(1, -1) - middle).normalized * radius;
                 x = bottomRight.x;
                 y = bottomRight.y;
                 break;
         }
 
-        if (spawnOnCircle)
+        if (!SinglePoint)
         {
             float angleInRadians = angle * Mathf.Deg2Rad;
             Vector2 onCircle = new Vector2(Mathf.Cos(angleInRadians), Mathf.Sin(angleInRadians)) * radius;

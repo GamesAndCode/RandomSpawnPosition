@@ -260,11 +260,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   objectToSpawn: {fileID: 3163329566103661074, guid: 9014eb56320055a4ea6bc4beb832bdf2, type: 3}
-  spawnOnAxis: 1
-  spawnOnCircle: 1
-  spawnCircular: 1
+  targetPrefab: {fileID: 6118167579541534687, guid: 6d5ece89afdbfeb488447b76599c541c, type: 3}
+  singlePoint: 0
+  spawnCircular: 0
   onScreen: 0
-  outOfScreen: 1
+  outOfScreen: 0
   outOfScreenLeftRight: 0
   arroundTarget: 0
   arroundTargetOnRadius: 0

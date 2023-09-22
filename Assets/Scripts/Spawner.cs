@@ -1,13 +1,15 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Class to play test out the RandomPosition class.
+/// </summary>
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private GameObject objectToSpawn;
+    [SerializeField] private GameObject targetPrefab;
 
-    [SerializeField] private bool spawnOnAxis;
-    [SerializeField] private bool spawnOnCircle;
+    [SerializeField] private bool singlePoint;
     [SerializeField] private bool spawnCircular;
 
     [SerializeField] private bool onScreen = false;
@@ -18,30 +20,29 @@ public class Spawner : MonoBehaviour
     [SerializeField] private bool arroundTargetOnRadius = false;
     [SerializeField] private bool arroundTargetInDonut = false;
     
-    private ScreenPositionManager screenPositionManager;
-    private int spawnCount = 1000;
+    private RandomPosition randomSP;
+    private int spawnCount = 500;
     private float timeBetweenSpawns = 0.005f;
 
     private void Awake()
     {
-        screenPositionManager = new ScreenPositionManager();
+        randomSP = new RandomPosition();
     }
 
     private IEnumerator Start()
     {
-        GameObject gameObject = new GameObject("Target");
-        gameObject.transform.position = new Vector2(0, 0);
-        screenPositionManager.spawnOnAxis = spawnOnAxis;
-        screenPositionManager.spawnOnCircle = spawnOnCircle;
-        screenPositionManager.spawnCircular = spawnCircular;
+        GameObject target = Instantiate(targetPrefab);
+        target.transform.position = new Vector2(0, 0);
+        randomSP.SinglePoint = singlePoint;
+        randomSP.Circular = spawnCircular;
 
         if(onScreen) yield return StartCoroutine(SpawnOnScreen());
         if(outOfScreen) yield return StartCoroutine(SpawnOutOfScreen());
-        if(outOfScreenLeftRight) yield return StartCoroutine(SpawnOutOfScreen(SpawnDirection.LEFT, SpawnDirection.RIGHT));
+        if(outOfScreenLeftRight) yield return StartCoroutine(SpawnOutOfScreen(ScreenDirection.LEFT, ScreenDirection.RIGHT));
         
-        if(arroundTarget) yield return StartCoroutine(ArroundCircle(gameObject, 5));
-        if(arroundTargetOnRadius) yield return StartCoroutine(ArroundTargetWithRadius(gameObject, 5));
-        if(arroundTargetInDonut) yield return StartCoroutine(ArroundTargetWithSpace(gameObject, 5, 2));
+        if(arroundTarget) yield return StartCoroutine(ArroundCircle(target, 5));
+        if(arroundTargetOnRadius) yield return StartCoroutine(ArroundTargetWithRadius(target, 5));
+        if(arroundTargetInDonut) yield return StartCoroutine(ArroundTargetWithSpace(target, 5, 2));
     }
 
     private IEnumerator SpawnOutOfScreen()
@@ -49,17 +50,17 @@ public class Spawner : MonoBehaviour
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOutOfScreen(), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.OutOfScreen(), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
 
-    private IEnumerator SpawnOutOfScreen(params SpawnDirection[] spawnDirections)
+    private IEnumerator SpawnOutOfScreen(params ScreenDirection[] spawnDirections)
     {
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetPositionOutOfScreen(spawnDirections), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.OutOfScreenDirection(spawnDirections), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
@@ -69,7 +70,7 @@ public class Spawner : MonoBehaviour
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOnScreen(), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.OnScreen(), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
@@ -79,7 +80,7 @@ public class Spawner : MonoBehaviour
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionArroundTarget(gameObject, radius), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.AroundTargetInCircle(gameObject, radius), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
@@ -89,7 +90,7 @@ public class Spawner : MonoBehaviour
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionInsideDonutArroundTarget(gameObject, radius, space), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.AroundTargetInDonut(gameObject, space, radius), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }
@@ -99,7 +100,7 @@ public class Spawner : MonoBehaviour
         objectToSpawn.GetComponent<SpriteRenderer>().color = Random.ColorHSV();
         for (int i = 0; i < spawnCount; i++)
         {
-            Instantiate(objectToSpawn, screenPositionManager.GetRandomPositionOnCircleArroundTarget(gameObject, radius), Quaternion.identity);
+            Instantiate(objectToSpawn, randomSP.AroundTargetOnCircle(gameObject, radius), Quaternion.identity);
             yield return new WaitForSeconds(timeBetweenSpawns);
         }
     }

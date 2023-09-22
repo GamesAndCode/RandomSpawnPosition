@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ScreenBorder
+public class ScreenBorders
 {
     public Vector3 bottomLeft { get; private set; }
     public Vector3 topLeft { get; private set; }
@@ -9,7 +9,7 @@ public class ScreenBorder
     public float width { get; private set; }
     public float height { get; private set; }
 
-    public ScreenBorder()
+    public ScreenBorders()
     {
         CalculateScreenBorders();
     }
